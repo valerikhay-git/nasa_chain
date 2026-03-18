@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NASA - CHAIN</title>
+  <title>dynamic connectors · profile cards</title>
   <style>
     * {
       margin: 0;
@@ -18,7 +18,6 @@
       overflow: hidden;
     }
 
-    /* Main container - fills viewport and handles panning */
     .pan-container {
       width: 100vw;
       height: 100vh;
@@ -31,7 +30,6 @@
       cursor: grabbing;
     }
 
-    /* Content wrapper that gets transformed for panning */
     .tree-wrapper {
       position: absolute;
       top: 0;
@@ -40,10 +38,9 @@
       height: 100%;
       transform-origin: 0 0;
       will-change: transform;
-      transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1); /* Smooth reset animation */
+      transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
     }
 
-    /* Center the root card in the view */
     .tree-container {
       display: flex;
       flex-direction: column;
@@ -58,54 +55,68 @@
       padding: 10rem;
     }
 
-    /* card base */
+    /* Redesigned card - name on top, PFP below, description */
     .card {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 24px;
       box-shadow: 0 18px 35px -12px rgba(0, 10, 30, 0.15), 0 0 0 1px rgba(0,0,0,0.02);
-      padding: 1.5rem 2rem;
+      padding: 1.8rem 2rem 2rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: all 0.2s;
-      width: 200px;
+      width: 240px;
       position: relative;
       z-index: 10;
       margin: 0 1rem;
     }
 
     .card:hover {
-      box-shadow: 0 24px 42px -14px rgba(0, 20, 40, 0.2), 0 0 0 1px rgba(0,0,0,0.02);
+      box-shadow: 0 24px 42px -14px rgba(0, 20, 40, 0.2), 0 0 0 1px rgba(0,0,0,0.05);
       transform: scale(1.02);
     }
 
-    .pfp {
-      width: 80px;
-      height: 80px;
+    /* Name on top */
+    .card-name {
+      font-weight: 600;
+      font-size: 1.3rem;
+      color: #1a2639;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+
+    /* Profile picture */
+    .card-pfp {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid white;
-      box-shadow: 0 8px 16px -8px rgba(0,32,64,0.2);
-      margin-bottom: 0.75rem;
+      border: 4px solid white;
+      box-shadow: 0 8px 20px -8px rgba(0,32,64,0.25);
+      margin-bottom: 1rem;
       background: #d9e2ec;
     }
 
-    .name {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #1a2639;
-      margin-bottom: 1rem;
-      letter-spacing: -0.01em;
+    /* Description text */
+    .card-description {
+      font-size: 0.9rem;
+      color: #4a5568;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+      opacity: 0.8;
+      font-weight: 400;
+      max-width: 180px;
     }
 
     .expand-btn {
       background: white;
       border: none;
-      border-radius: 60px;
-      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      padding: 0.6rem 1.4rem;
       font-size: 0.9rem;
       font-weight: 500;
       color: #1f2a44;
@@ -116,12 +127,17 @@
       align-items: center;
       gap: 0.25rem;
       z-index: 20;
+      width: fit-content;
     }
 
     .expand-btn:hover {
       background: #f0f4fe;
       box-shadow: 0 8px 18px -8px rgba(0,80,120,0.25);
       transform: scale(1.05);
+    }
+
+    .expand-btn:active {
+      transform: scale(0.95);
     }
 
     .children-wrapper {
@@ -138,10 +154,9 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      min-width: 200px;
+      min-width: 240px;
     }
 
-    /* canvas for dynamic lines */
     .connector-canvas {
       position: absolute;
       top: 0;
@@ -178,7 +193,7 @@
       background: #e3eaf0;
     }
 
-    /* Lost button - fixed position */
+    /* Lost button */
     .lost-button {
       position: fixed;
       bottom: 20px;
@@ -214,7 +229,7 @@
       font-size: 1.1rem;
     }
 
-    /* Grid background to show movement */
+    /* Grid background */
     .tree-container::before {
       content: '';
       position: absolute;
@@ -248,19 +263,35 @@
     </div>
   </div>
   
-  <button class="lost-button" id="lostButton">Are You Lost?</button>
+  <button class="lost-button" id="lostButton">You are Lost?</button>
 
   <script>
     (function() {
       const MAX_DEPTH = 3;
-      const PLACEHOLDER_PFP = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%23a0c4e2\' /%3E%3Ctext x=\'50\' y=\'70\' font-size=\'40\' text-anchor=\'middle\' fill=\'%233f5e7a\' font-weight=\'500\'%3E😊%3C/text%3E%3C/svg%3E';
+      
+      // Different profile pictures (SVG placeholders with different colors)
+      const PFP_COLORS = ['#a0c4e2', '#c7b9e0', '#b7e0c0', '#f5c7b7', '#fce2b7', '#ffb7c5'];
+      
+      // Descriptions for variety
+      const descriptions = [
+        'Loves coffee and code',
+        'Digital artist',
+        'Travel enthusiast',
+        'Music producer',
+        'Plant parent',
+        'Bookworm',
+        'Yoga practitioner',
+        'Food explorer',
+        'Tech innovator',
+        'Nature photographer'
+      ];
 
       const names = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Avery', 'Quinn', 'Sage', 'Blake'];
       
-      // Store all cards and their relationships
       const cardRelationships = new Map();
       let canvas, ctx;
       let animationFrame;
+      let rootCard = null;
 
       // Panning variables
       const panContainer = document.getElementById('panContainer');
@@ -268,7 +299,6 @@
       let isPanning = false;
       let startX, startY;
       let translateX = 0, translateY = 0;
-      let rootCard = null; // Store reference to root card
 
       function randomName(excludeNames = []) {
         let availableNames = names.filter(n => !excludeNames.includes(n));
@@ -276,59 +306,57 @@
         return availableNames[Math.floor(Math.random() * availableNames.length)];
       }
 
-      // Reset view to center on root card
+      function randomDescription() {
+        return descriptions[Math.floor(Math.random() * descriptions.length)];
+      }
+
+      function randomPFPColor() {
+        return PFP_COLORS[Math.floor(Math.random() * PFP_COLORS.length)];
+      }
+
+      function createPFPDataURL(color, emoji) {
+        const emojis = ['😊', '🌟', '🎨', '📚', '🎵', '🌱', '🧘', '☕', '📸', '🚀'];
+        const selectedEmoji = emoji || emojis[Math.floor(Math.random() * emojis.length)];
+        return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='${encodeURIComponent(color)}' /%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23333' font-weight='500'%3E${encodeURIComponent(selectedEmoji)}%3C/text%3E%3C/svg%3E`;
+      }
+
       function resetToRoot() {
-        // Animate back to center (0,0 translation)
         translateX = 0;
         translateY = 0;
         treeWrapper.style.transform = `translate(0px, 0px)`;
-        
-        // Update connectors after animation
         setTimeout(updateConnectors, 500);
       }
 
-      // Pan functionality - completely free movement
       function initPanning() {
         panContainer.addEventListener('mousedown', startPan);
         document.addEventListener('mousemove', pan);
         document.addEventListener('mouseup', stopPan);
-        
-        // Prevent default drag behavior on images
         document.addEventListener('dragstart', (e) => e.preventDefault());
 
-        // Lost button click handler
         const lostButton = document.getElementById('lostButton');
         lostButton.addEventListener('click', resetToRoot);
       }
 
       function startPan(e) {
-        // Don't start pan if clicking on a button
         if (e.target.closest('.expand-btn') || e.target.closest('.lost-button')) return;
         
         isPanning = true;
         panContainer.classList.add('panning');
         startX = e.clientX - translateX;
         startY = e.clientY - translateY;
-        
-        // Remove transition during manual pan
         treeWrapper.style.transition = 'none';
-        
         e.preventDefault();
       }
 
       function pan(e) {
         if (!isPanning) return;
-        
         e.preventDefault();
         
-        // Calculate new position - NO LIMITS, completely free
         translateX = e.clientX - startX;
         translateY = e.clientY - startY;
         
-        // Apply transform
         treeWrapper.style.transform = `translate(${translateX}px, ${translateY}px)`;
         
-        // Update connectors during pan (throttled)
         if (!animationFrame) {
           animationFrame = requestAnimationFrame(() => {
             drawConnectors();
@@ -340,7 +368,6 @@
       function stopPan() {
         isPanning = false;
         panContainer.classList.remove('panning');
-        // Restore transition for future reset animations
         treeWrapper.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1)';
       }
 
@@ -352,7 +379,6 @@
           const container = document.getElementById('treeContainer');
           const rect = container.getBoundingClientRect();
           
-          // Make canvas cover the entire container
           canvas.width = rect.width;
           canvas.height = rect.height;
           canvas.style.width = rect.width + 'px';
@@ -361,68 +387,49 @@
           drawConnectors();
         }
 
-        // Use ResizeObserver for accurate container size tracking
-        const resizeObserver = new ResizeObserver(() => {
-          resizeCanvas();
-        });
-        
+        const resizeObserver = new ResizeObserver(resizeCanvas);
         resizeObserver.observe(document.getElementById('treeContainer'));
-        
-        // Also observe the pan container for window resize
         window.addEventListener('resize', resizeCanvas);
-        
-        // Initial resize
         resizeCanvas();
       }
 
       function drawConnectors() {
         if (!ctx) return;
         
-        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Set line style
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 2;
         ctx.setLineDash([]);
         
-        // Get container position
         const container = document.getElementById('treeContainer');
         const containerRect = container.getBoundingClientRect();
         
-        // Draw all connections
         for (const [childCard, relationship] of cardRelationships) {
           const parentCard = relationship.parent;
           if (!parentCard) continue;
           
-          // Get positions relative to container
           const parentRect = parentCard.getBoundingClientRect();
           const childRect = childCard.getBoundingClientRect();
           
-          // Calculate positions relative to canvas (container-relative)
           const parentX = parentRect.left + parentRect.width / 2 - containerRect.left;
           const parentY = parentRect.bottom - containerRect.top - 5;
           
           const childX = childRect.left + childRect.width / 2 - containerRect.left;
           const childY = childRect.top - containerRect.top + 5;
           
-          // Only draw if coordinates are within canvas bounds (with margin)
           const margin = 100;
           if (parentY > -margin && parentY < canvas.height + margin &&
               childY > -margin && childY < canvas.height + margin) {
             
-            // Calculate midpoint for horizontal line
             const midY = parentY + (childY - parentY) * 0.3;
             
             ctx.beginPath();
             ctx.strokeStyle = '#94a3b8';
             ctx.lineWidth = 2;
             
-            // Draw vertical line from parent
             ctx.moveTo(parentX, parentY);
             ctx.lineTo(parentX, midY);
             
-            // Get sibling cards
             const siblingCards = Array.from(cardRelationships.entries())
               .filter(([_, rel]) => rel.parent === parentCard)
               .map(([card, rel]) => ({ card, isFirst: rel.isFirstChild }));
@@ -437,12 +444,10 @@
               const x1 = rect1.left + rect1.width / 2 - containerRect.left;
               const x2 = rect2.left + rect2.width / 2 - containerRect.left;
               
-              // Draw horizontal line connecting both children
               ctx.moveTo(Math.min(x1, x2), midY);
               ctx.lineTo(Math.max(x1, x2), midY);
             }
             
-            // Draw vertical line to this specific child
             ctx.moveTo(parentX, midY);
             ctx.lineTo(childX, midY);
             ctx.moveTo(childX, midY);
@@ -478,22 +483,34 @@
         card.className = 'card card-appear';
         if (depth >= MAX_DEPTH) card.classList.add('max-depth');
 
-        const img = document.createElement('img');
-        img.className = 'pfp';
-        img.src = PLACEHOLDER_PFP;
-        img.alt = 'profile';
-
-        const nameSpan = document.createElement('div');
-        nameSpan.className = 'name';
+        // Name (top)
+        const nameElement = document.createElement('div');
+        nameElement.className = 'card-name';
         const name = customName || randomName(usedNames);
-        nameSpan.textContent = name;
+        nameElement.textContent = name;
 
+        // Profile picture
+        const pfp = document.createElement('img');
+        pfp.className = 'card-pfp';
+        const color = randomPFPColor();
+        const emoji = ['😊', '🌟', '🎨', '📚', '🎵', '🌱', '🧘', '☕', '📸', '🚀'][Math.floor(Math.random() * 10)];
+        pfp.src = createPFPDataURL(color, emoji);
+        pfp.alt = 'profile';
+
+        // Description
+        const descElement = document.createElement('div');
+        descElement.className = 'card-description';
+        descElement.textContent = randomDescription();
+
+        // Expand button
         const btn = document.createElement('button');
         btn.className = 'expand-btn';
         btn.innerHTML = '<span class="btn-icon">⤵</span> Expand';
 
-        card.appendChild(img);
-        card.appendChild(nameSpan);
+        // Assemble card in the new order: name, pfp, description, button
+        card.appendChild(nameElement);
+        card.appendChild(pfp);
+        card.appendChild(descElement);
         card.appendChild(btn);
 
         card.dataset.depth = depth;
@@ -503,7 +520,6 @@
           registerRelationship(card, parentCard, isFirstChild);
         }
 
-        // Watch for position changes
         const observer = new MutationObserver(() => {
           updateConnectors();
         });
@@ -519,10 +535,8 @@
 
           const currentDepth = parseInt(card.dataset.depth, 10);
           
-          // Check if already expanded
           const nextElement = card.nextElementSibling;
           if (nextElement && nextElement.classList.contains('children-wrapper')) {
-            // Remove children and their relationships
             const childUnits = nextElement.querySelectorAll('.child-unit');
             childUnits.forEach(unit => {
               const childCard = unit.querySelector('.card');
@@ -562,7 +576,6 @@
         return card;
       }
 
-      // Initialize
       function init() {
         const container = document.getElementById('treeContainer');
         container.innerHTML = '<canvas class="connector-canvas" id="connectorCanvas"></canvas>';
@@ -570,14 +583,13 @@
         setupCanvas();
         initPanning();
         
-        rootCard = createCard(0, 'hyhhhghhygy', ['hyhhhghhygy']);
+        rootCard = createCard(0, 'You', ['You']);
         rootCard.classList.add('root-card');
         container.appendChild(rootCard);
         
         updateConnectors();
       }
 
-      // Start the app
       init();
     })();
   </script>
