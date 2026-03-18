@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>wireframe cards · infinite pan</title>
+  <title>wireframe cards · user management</title>
   <style>
     * {
       margin: 0;
@@ -18,7 +18,131 @@
       overflow: hidden;
     }
 
-    /* Main container - fills viewport and handles panning */
+    /* User Management Panel */
+    .user-panel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 2px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 1.2rem;
+      z-index: 200;
+      width: 320px;
+      box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.2);
+    }
+
+    .user-panel h3 {
+      font-size: 1rem;
+      color: #334155;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .user-panel h3::before {
+      content: '👥';
+      font-size: 1.2rem;
+    }
+
+    .user-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.5rem;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .user-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .delete-user {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .delete-user:hover {
+      background: #fee2e2;
+      transform: scale(1.1);
+    }
+
+    .add-user-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .add-user-form input {
+      padding: 0.6rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .add-user-form input:focus {
+      outline: none;
+      border-color: #94a3b8;
+    }
+
+    .add-user-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 30px;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+    }
+
+    .add-user-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    /* Main container */
     .pan-container {
       width: 100vw;
       height: 100vh;
@@ -31,7 +155,6 @@
       cursor: grabbing;
     }
 
-    /* Content wrapper that gets transformed for panning */
     .tree-wrapper {
       position: absolute;
       top: 0;
@@ -43,7 +166,6 @@
       transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
     }
 
-    /* Center the root card in the view */
     .tree-container {
       display: flex;
       flex-direction: column;
@@ -58,7 +180,7 @@
       padding: 10rem;
     }
 
-    /* Wireframe card - rectangular with left square and right text */
+    /* Wireframe card */
     .card {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
@@ -71,7 +193,7 @@
       align-items: center;
       gap: 1.2rem;
       transition: all 0.2s;
-      width: 280px;
+      width: 300px;
       position: relative;
       z-index: 10;
       margin: 0 1rem;
@@ -84,7 +206,6 @@
       background: white;
     }
 
-    /* Left square placeholder for PFP */
     .pfp-placeholder {
       width: 70px;
       height: 70px;
@@ -107,7 +228,6 @@
       opacity: 0.6;
     }
 
-    /* Right side content */
     .card-content {
       display: flex;
       flex-direction: column;
@@ -115,7 +235,6 @@
       flex: 1;
     }
 
-    /* Name */
     .name {
       font-weight: 700;
       font-size: 1.2rem;
@@ -124,7 +243,6 @@
       line-height: 1.2;
     }
 
-    /* Description text (smaller) */
     .description {
       font-size: 0.8rem;
       color: #64748b;
@@ -133,7 +251,6 @@
       font-style: italic;
     }
 
-    /* Expand button - small and minimal */
     .expand-btn {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
@@ -157,16 +274,6 @@
       transform: scale(1.05);
     }
 
-    .expand-btn:active {
-      transform: scale(0.95);
-    }
-
-    .btn-icon {
-      font-size: 1rem;
-      line-height: 1;
-    }
-
-    /* Children wrapper */
     .children-wrapper {
       display: flex;
       justify-content: center;
@@ -181,10 +288,9 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      min-width: 280px;
+      min-width: 300px;
     }
 
-    /* canvas for dynamic lines */
     .connector-canvas {
       position: absolute;
       top: 0;
@@ -213,11 +319,8 @@
     .card.max-depth .expand-btn {
       opacity: 0.4;
       pointer-events: none;
-      background: #f1f5f9;
-      border-color: #cbd5e1;
     }
 
-    /* Lost button */
     .lost-button {
       position: fixed;
       bottom: 20px;
@@ -234,26 +337,18 @@
       cursor: pointer;
       z-index: 100;
       transition: all 0.2s ease;
-      letter-spacing: -0.01em;
     }
 
     .lost-button:hover {
       background: #f0f4fe;
       transform: scale(1.05);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-    }
-
-    .lost-button:active {
-      transform: scale(0.95);
     }
 
     .lost-button::before {
       content: '🧭';
       margin-right: 8px;
-      font-size: 1.1rem;
     }
 
-    /* Grid background */
     .tree-container::before {
       content: '';
       position: absolute;
@@ -268,17 +363,26 @@
       pointer-events: none;
       z-index: 0;
     }
-
-    @media (max-width: 640px) {
-      .children-wrapper {
-        flex-direction: column;
-        align-items: center;
-        gap: 2rem;
-      }
-    }
   </style>
 </head>
 <body>
+  <!-- User Management Panel -->
+  <div class="user-panel" id="userPanel">
+    <h3>User Management</h3>
+    
+    <div class="user-list" id="userList">
+      <!-- Users will be dynamically added here -->
+    </div>
+
+    <div class="add-user-form">
+      <input type="text" id="newUserName" placeholder="Name (e.g., Alex Chen)" value="New User">
+      <input type="text" id="newUserDesc" placeholder="Description (e.g., Product Manager)" value="Team Member">
+      <button class="add-user-btn" id="addUserBtn">
+        <span>➕</span> Add New User
+      </button>
+    </div>
+  </div>
+
   <div class="pan-container" id="panContainer">
     <div class="tree-wrapper" id="treeWrapper">
       <div class="tree-container" id="treeContainer">
@@ -293,9 +397,40 @@
     (function() {
       const MAX_DEPTH = 3;
       
-      // Sample names and descriptions
-      const names = ['Alex Chen', 'Jordan Lee', 'Taylor Smith', 'Casey Kim', 'Riley Patel', 'Morgan James', 'Avery Wong', 'Quinn Davis', 'Sage Miller', 'Blake Wilson'];
-      const descriptions = ['Product Designer', 'Dev Advocate', 'UX Researcher', 'Frontend Dev', 'Product Manager', 'UI Engineer', 'Design Lead', 'Full Stack', 'Creative Dir', 'Tech Lead'];
+      // ===== EASY USER MANAGEMENT =====
+      // Just add or remove from this array!
+      let userDatabase = [
+        { name: 'Alex Chen', desc: 'Product Designer' },
+        { name: 'Jordan Lee', desc: 'Dev Advocate' },
+        { name: 'Taylor Smith', desc: 'UX Researcher' },
+        { name: 'Casey Kim', desc: 'Frontend Dev' },
+        { name: 'Riley Patel', desc: 'Product Manager' },
+        { name: 'Morgan James', desc: 'UI Engineer' },
+        { name: 'Avery Wong', desc: 'Design Lead' },
+        { name: 'Quinn Davis', desc: 'Full Stack' },
+        { name: 'Sage Miller', desc: 'Creative Dir' },
+        { name: 'Blake Wilson', desc: 'Tech Lead' }
+      ];
+
+      // ===== Helper functions =====
+      function getAllUserNames() {
+        return userDatabase.map(u => u.name);
+      }
+
+      function getRandomUser() {
+        return userDatabase[Math.floor(Math.random() * userDatabase.length)];
+      }
+
+      function getRandomUserName(excludeNames = []) {
+        const available = userDatabase.filter(u => !excludeNames.includes(u.name));
+        if (available.length === 0) return userDatabase[0];
+        return available[Math.floor(Math.random() * available.length)].name;
+      }
+
+      function getRandomUserDesc(name) {
+        const user = userDatabase.find(u => u.name === name);
+        return user ? user.desc : 'Team Member';
+      }
 
       // Store all cards and their relationships
       const cardRelationships = new Map();
@@ -309,15 +444,49 @@
       let startX, startY;
       let translateX = 0, translateY = 0;
 
-      function randomName() {
-        return names[Math.floor(Math.random() * names.length)];
+      // ===== UI Functions =====
+      function updateUserListUI() {
+        const userList = document.getElementById('userList');
+        userList.innerHTML = '';
+        
+        userDatabase.forEach((user, index) => {
+          const userItem = document.createElement('div');
+          userItem.className = 'user-item';
+          userItem.innerHTML = `
+            <div class="user-info">
+              <span class="user-name">${user.name}</span>
+              <span class="user-desc">${user.desc}</span>
+            </div>
+            <button class="delete-user" data-index="${index}">✕</button>
+          `;
+          userList.appendChild(userItem);
+        });
+
+        // Add delete handlers
+        document.querySelectorAll('.delete-user').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.index);
+            deleteUser(index);
+          });
+        });
       }
 
-      function randomDescription() {
-        return descriptions[Math.floor(Math.random() * descriptions.length)];
+      function addUser(name, desc) {
+        if (name && desc) {
+          userDatabase.push({ name, desc });
+          updateUserListUI();
+        }
       }
 
-      // Reset view to center on root card
+      function deleteUser(index) {
+        if (index >= 0 && index < userDatabase.length) {
+          userDatabase.splice(index, 1);
+          updateUserListUI();
+        }
+      }
+
+      // Reset view to center
       function resetToRoot() {
         translateX = 0;
         translateY = 0;
@@ -334,10 +503,17 @@
 
         const lostButton = document.getElementById('lostButton');
         lostButton.addEventListener('click', resetToRoot);
+
+        // Add user button handler
+        document.getElementById('addUserBtn').addEventListener('click', () => {
+          const nameInput = document.getElementById('newUserName');
+          const descInput = document.getElementById('newUserDesc');
+          addUser(nameInput.value.trim(), descInput.value.trim());
+        });
       }
 
       function startPan(e) {
-        if (e.target.closest('.expand-btn') || e.target.closest('.lost-button')) return;
+        if (e.target.closest('.expand-btn') || e.target.closest('.lost-button') || e.target.closest('.add-user-btn') || e.target.closest('.delete-user')) return;
         
         isPanning = true;
         panContainer.classList.add('panning');
@@ -372,6 +548,7 @@
         treeWrapper.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1)';
       }
 
+      // Canvas setup
       function setupCanvas() {
         canvas = document.getElementById('connectorCanvas');
         ctx = canvas.getContext('2d');
@@ -403,7 +580,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 2;
-        ctx.setLineDash([5, 3]); // Dashed lines for wireframe feel
+        ctx.setLineDash([5, 3]);
         
         const container = document.getElementById('treeContainer');
         const containerRect = container.getBoundingClientRect();
@@ -429,11 +606,9 @@
             
             ctx.beginPath();
             
-            // Draw vertical line from parent
             ctx.moveTo(parentX, parentY);
             ctx.lineTo(parentX, midY);
             
-            // Get sibling cards
             const siblingCards = Array.from(cardRelationships.entries())
               .filter(([_, rel]) => rel.parent === parentCard)
               .map(([card, rel]) => ({ card, isFirst: rel.isFirstChild }));
@@ -448,12 +623,10 @@
               const x1 = rect1.left + rect1.width / 2 - containerRect.left;
               const x2 = rect2.left + rect2.width / 2 - containerRect.left;
               
-              // Draw horizontal line
               ctx.moveTo(Math.min(x1, x2), midY);
               ctx.lineTo(Math.max(x1, x2), midY);
             }
             
-            // Draw vertical line to child
             ctx.moveTo(parentX, midY);
             ctx.lineTo(childX, midY);
             ctx.moveTo(childX, midY);
@@ -493,20 +666,20 @@
         const pfpPlaceholder = document.createElement('div');
         pfpPlaceholder.className = 'pfp-placeholder';
 
-        // Right content container
+        // Right content
         const content = document.createElement('div');
         content.className = 'card-content';
 
         // Name
         const nameSpan = document.createElement('div');
         nameSpan.className = 'name';
-        const name = customName || randomName();
+        const name = customName || getRandomUserName();
         nameSpan.textContent = name;
 
         // Description
         const descSpan = document.createElement('div');
         descSpan.className = 'description';
-        const desc = customDesc || randomDescription();
+        const desc = customDesc || getRandomUserDesc(name);
         descSpan.textContent = desc;
 
         // Expand button
@@ -514,7 +687,6 @@
         btn.className = 'expand-btn';
         btn.innerHTML = '<span class="btn-icon">⤵</span> Expand';
 
-        // Assemble card
         content.appendChild(nameSpan);
         content.appendChild(descSpan);
         content.appendChild(btn);
@@ -530,7 +702,6 @@
           registerRelationship(card, parentCard, isFirstChild);
         }
 
-        // Watch for position changes
         const observer = new MutationObserver(() => {
           updateConnectors();
         });
@@ -546,10 +717,8 @@
 
           const currentDepth = parseInt(card.dataset.depth, 10);
           
-          // Check if already expanded
           const nextElement = card.nextElementSibling;
           if (nextElement && nextElement.classList.contains('children-wrapper')) {
-            // Remove children and their relationships
             const childUnits = nextElement.querySelectorAll('.child-unit');
             childUnits.forEach(unit => {
               const childCard = unit.querySelector('.card');
@@ -574,13 +743,10 @@
             const unit = document.createElement('div');
             unit.className = 'child-unit';
             
-            let childName = randomName();
-            while (usedNames.includes(childName)) {
-              childName = randomName();
-            }
+            let childName = getRandomUserName(usedNames);
             usedNames.push(childName);
             
-            const childDesc = randomDescription();
+            const childDesc = getRandomUserDesc(childName);
             
             const childCard = createCard(currentDepth + 1, childName, childDesc, card, i === 0);
             unit.appendChild(childCard);
@@ -601,6 +767,7 @@
         
         setupCanvas();
         initPanning();
+        updateUserListUI();
         
         const rootCard = createCard(0, 'You', 'Root User');
         rootCard.classList.add('root-card');
