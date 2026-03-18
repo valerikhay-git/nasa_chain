@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>dynamic connectors · profile cards</title>
+  <title>wireframe cards · infinite pan</title>
   <style>
     * {
       margin: 0;
@@ -18,6 +18,7 @@
       overflow: hidden;
     }
 
+    /* Main container - fills viewport and handles panning */
     .pan-container {
       width: 100vw;
       height: 100vh;
@@ -30,6 +31,7 @@
       cursor: grabbing;
     }
 
+    /* Content wrapper that gets transformed for panning */
     .tree-wrapper {
       position: absolute;
       top: 0;
@@ -41,6 +43,7 @@
       transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1);
     }
 
+    /* Center the root card in the view */
     .tree-container {
       display: flex;
       flex-direction: column;
@@ -55,84 +58,102 @@
       padding: 10rem;
     }
 
-    /* Redesigned card - name on top, PFP below, description */
+    /* Wireframe card - rectangular with left square and right text */
     .card {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: 24px;
-      box-shadow: 0 18px 35px -12px rgba(0, 10, 30, 0.15), 0 0 0 1px rgba(0,0,0,0.02);
-      padding: 1.8rem 2rem 2rem 2rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.1);
+      padding: 1.2rem;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      width: 240px;
+      gap: 1.2rem;
+      transition: all 0.2s;
+      width: 280px;
       position: relative;
       z-index: 10;
       margin: 0 1rem;
     }
 
     .card:hover {
-      box-shadow: 0 24px 42px -14px rgba(0, 20, 40, 0.2), 0 0 0 1px rgba(0,0,0,0.05);
+      border-color: #94a3b8;
+      box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.2);
       transform: scale(1.02);
-    }
-
-    /* Name on top */
-    .card-name {
-      font-weight: 600;
-      font-size: 1.3rem;
-      color: #1a2639;
-      margin-bottom: 1.2rem;
-      letter-spacing: -0.01em;
-      text-align: center;
-    }
-
-    /* Profile picture */
-    .card-pfp {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid white;
-      box-shadow: 0 8px 20px -8px rgba(0,32,64,0.25);
-      margin-bottom: 1rem;
-      background: #d9e2ec;
-    }
-
-    /* Description text */
-    .card-description {
-      font-size: 0.9rem;
-      color: #4a5568;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-      opacity: 0.8;
-      font-weight: 400;
-      max-width: 180px;
-    }
-
-    .expand-btn {
       background: white;
-      border: none;
-      border-radius: 40px;
-      padding: 0.6rem 1.4rem;
-      font-size: 0.9rem;
+    }
+
+    /* Left square placeholder for PFP */
+    .pfp-placeholder {
+      width: 70px;
+      height: 70px;
+      background: #e2e8f0;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 0.7rem;
       font-weight: 500;
-      color: #1f2a44;
-      box-shadow: 0 4px 12px rgba(0,32,64,0.08), 0 0 0 1px rgba(0,0,0,0.02);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .pfp-placeholder::before {
+      content: 'PFP';
+      opacity: 0.6;
+    }
+
+    /* Right side content */
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    /* Name */
+    .name {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    /* Description text (smaller) */
+    .description {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      font-style: italic;
+    }
+
+    /* Expand button - small and minimal */
+    .expand-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 30px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #334155;
       cursor: pointer;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
-      z-index: 20;
       width: fit-content;
+      z-index: 20;
     }
 
     .expand-btn:hover {
-      background: #f0f4fe;
-      box-shadow: 0 8px 18px -8px rgba(0,80,120,0.25);
+      background: #e2e8f0;
+      border-color: #94a3b8;
       transform: scale(1.05);
     }
 
@@ -140,6 +161,12 @@
       transform: scale(0.95);
     }
 
+    .btn-icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* Children wrapper */
     .children-wrapper {
       display: flex;
       justify-content: center;
@@ -154,9 +181,10 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      min-width: 240px;
+      min-width: 280px;
     }
 
+    /* canvas for dynamic lines */
     .connector-canvas {
       position: absolute;
       top: 0;
@@ -182,15 +210,11 @@
       }
     }
 
-    .btn-icon {
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
     .card.max-depth .expand-btn {
       opacity: 0.4;
       pointer-events: none;
-      background: #e3eaf0;
+      background: #f1f5f9;
+      border-color: #cbd5e1;
     }
 
     /* Lost button */
@@ -269,29 +293,14 @@
     (function() {
       const MAX_DEPTH = 3;
       
-      // Different profile pictures (SVG placeholders with different colors)
-      const PFP_COLORS = ['#a0c4e2', '#c7b9e0', '#b7e0c0', '#f5c7b7', '#fce2b7', '#ffb7c5'];
-      
-      // Descriptions for variety
-      const descriptions = [
-        'Loves coffee and code',
-        'Digital artist',
-        'Travel enthusiast',
-        'Music producer',
-        'Plant parent',
-        'Bookworm',
-        'Yoga practitioner',
-        'Food explorer',
-        'Tech innovator',
-        'Nature photographer'
-      ];
+      // Sample names and descriptions
+      const names = ['Alex Chen', 'Jordan Lee', 'Taylor Smith', 'Casey Kim', 'Riley Patel', 'Morgan James', 'Avery Wong', 'Quinn Davis', 'Sage Miller', 'Blake Wilson'];
+      const descriptions = ['Product Designer', 'Dev Advocate', 'UX Researcher', 'Frontend Dev', 'Product Manager', 'UI Engineer', 'Design Lead', 'Full Stack', 'Creative Dir', 'Tech Lead'];
 
-      const names = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Avery', 'Quinn', 'Sage', 'Blake'];
-      
+      // Store all cards and their relationships
       const cardRelationships = new Map();
       let canvas, ctx;
       let animationFrame;
-      let rootCard = null;
 
       // Panning variables
       const panContainer = document.getElementById('panContainer');
@@ -300,26 +309,15 @@
       let startX, startY;
       let translateX = 0, translateY = 0;
 
-      function randomName(excludeNames = []) {
-        let availableNames = names.filter(n => !excludeNames.includes(n));
-        if (availableNames.length === 0) availableNames = names;
-        return availableNames[Math.floor(Math.random() * availableNames.length)];
+      function randomName() {
+        return names[Math.floor(Math.random() * names.length)];
       }
 
       function randomDescription() {
         return descriptions[Math.floor(Math.random() * descriptions.length)];
       }
 
-      function randomPFPColor() {
-        return PFP_COLORS[Math.floor(Math.random() * PFP_COLORS.length)];
-      }
-
-      function createPFPDataURL(color, emoji) {
-        const emojis = ['😊', '🌟', '🎨', '📚', '🎵', '🌱', '🧘', '☕', '📸', '🚀'];
-        const selectedEmoji = emoji || emojis[Math.floor(Math.random() * emojis.length)];
-        return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='${encodeURIComponent(color)}' /%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23333' font-weight='500'%3E${encodeURIComponent(selectedEmoji)}%3C/text%3E%3C/svg%3E`;
-      }
-
+      // Reset view to center on root card
       function resetToRoot() {
         translateX = 0;
         translateY = 0;
@@ -327,6 +325,7 @@
         setTimeout(updateConnectors, 500);
       }
 
+      // Pan functionality
       function initPanning() {
         panContainer.addEventListener('mousedown', startPan);
         document.addEventListener('mousemove', pan);
@@ -344,12 +343,14 @@
         panContainer.classList.add('panning');
         startX = e.clientX - translateX;
         startY = e.clientY - translateY;
+        
         treeWrapper.style.transition = 'none';
         e.preventDefault();
       }
 
       function pan(e) {
         if (!isPanning) return;
+        
         e.preventDefault();
         
         translateX = e.clientX - startX;
@@ -387,7 +388,10 @@
           drawConnectors();
         }
 
-        const resizeObserver = new ResizeObserver(resizeCanvas);
+        const resizeObserver = new ResizeObserver(() => {
+          resizeCanvas();
+        });
+        
         resizeObserver.observe(document.getElementById('treeContainer'));
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
@@ -399,7 +403,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 2;
-        ctx.setLineDash([]);
+        ctx.setLineDash([5, 3]); // Dashed lines for wireframe feel
         
         const container = document.getElementById('treeContainer');
         const containerRect = container.getBoundingClientRect();
@@ -412,10 +416,10 @@
           const childRect = childCard.getBoundingClientRect();
           
           const parentX = parentRect.left + parentRect.width / 2 - containerRect.left;
-          const parentY = parentRect.bottom - containerRect.top - 5;
+          const parentY = parentRect.bottom - containerRect.top;
           
           const childX = childRect.left + childRect.width / 2 - containerRect.left;
-          const childY = childRect.top - containerRect.top + 5;
+          const childY = childRect.top - containerRect.top;
           
           const margin = 100;
           if (parentY > -margin && parentY < canvas.height + margin &&
@@ -424,12 +428,12 @@
             const midY = parentY + (childY - parentY) * 0.3;
             
             ctx.beginPath();
-            ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 2;
             
+            // Draw vertical line from parent
             ctx.moveTo(parentX, parentY);
             ctx.lineTo(parentX, midY);
             
+            // Get sibling cards
             const siblingCards = Array.from(cardRelationships.entries())
               .filter(([_, rel]) => rel.parent === parentCard)
               .map(([card, rel]) => ({ card, isFirst: rel.isFirstChild }));
@@ -444,10 +448,12 @@
               const x1 = rect1.left + rect1.width / 2 - containerRect.left;
               const x2 = rect2.left + rect2.width / 2 - containerRect.left;
               
+              // Draw horizontal line
               ctx.moveTo(Math.min(x1, x2), midY);
               ctx.lineTo(Math.max(x1, x2), midY);
             }
             
+            // Draw vertical line to child
             ctx.moveTo(parentX, midY);
             ctx.lineTo(childX, midY);
             ctx.moveTo(childX, midY);
@@ -478,48 +484,53 @@
         updateConnectors();
       }
 
-      function createCard(depth = 0, customName = null, usedNames = [], parentCard = null, isFirstChild = false) {
+      function createCard(depth = 0, customName = null, customDesc = null, parentCard = null, isFirstChild = false) {
         const card = document.createElement('div');
         card.className = 'card card-appear';
         if (depth >= MAX_DEPTH) card.classList.add('max-depth');
 
-        // Name (top)
-        const nameElement = document.createElement('div');
-        nameElement.className = 'card-name';
-        const name = customName || randomName(usedNames);
-        nameElement.textContent = name;
+        // Left square placeholder
+        const pfpPlaceholder = document.createElement('div');
+        pfpPlaceholder.className = 'pfp-placeholder';
 
-        // Profile picture
-        const pfp = document.createElement('img');
-        pfp.className = 'card-pfp';
-        const color = randomPFPColor();
-        const emoji = ['😊', '🌟', '🎨', '📚', '🎵', '🌱', '🧘', '☕', '📸', '🚀'][Math.floor(Math.random() * 10)];
-        pfp.src = createPFPDataURL(color, emoji);
-        pfp.alt = 'profile';
+        // Right content container
+        const content = document.createElement('div');
+        content.className = 'card-content';
+
+        // Name
+        const nameSpan = document.createElement('div');
+        nameSpan.className = 'name';
+        const name = customName || randomName();
+        nameSpan.textContent = name;
 
         // Description
-        const descElement = document.createElement('div');
-        descElement.className = 'card-description';
-        descElement.textContent = randomDescription();
+        const descSpan = document.createElement('div');
+        descSpan.className = 'description';
+        const desc = customDesc || randomDescription();
+        descSpan.textContent = desc;
 
         // Expand button
         const btn = document.createElement('button');
         btn.className = 'expand-btn';
         btn.innerHTML = '<span class="btn-icon">⤵</span> Expand';
 
-        // Assemble card in the new order: name, pfp, description, button
-        card.appendChild(nameElement);
-        card.appendChild(pfp);
-        card.appendChild(descElement);
-        card.appendChild(btn);
+        // Assemble card
+        content.appendChild(nameSpan);
+        content.appendChild(descSpan);
+        content.appendChild(btn);
+        
+        card.appendChild(pfpPlaceholder);
+        card.appendChild(content);
 
         card.dataset.depth = depth;
         card.dataset.name = name;
+        card.dataset.desc = desc;
 
         if (parentCard) {
           registerRelationship(card, parentCard, isFirstChild);
         }
 
+        // Watch for position changes
         const observer = new MutationObserver(() => {
           updateConnectors();
         });
@@ -535,8 +546,10 @@
 
           const currentDepth = parseInt(card.dataset.depth, 10);
           
+          // Check if already expanded
           const nextElement = card.nextElementSibling;
           if (nextElement && nextElement.classList.contains('children-wrapper')) {
+            // Remove children and their relationships
             const childUnits = nextElement.querySelectorAll('.child-unit');
             childUnits.forEach(unit => {
               const childCard = unit.querySelector('.card');
@@ -555,16 +568,21 @@
           wrapper.className = 'children-wrapper';
 
           const parentName = card.dataset.name;
-          const usedForChildren = [parentName];
+          const usedNames = [parentName];
 
           for (let i = 0; i < 2; i++) {
             const unit = document.createElement('div');
             unit.className = 'child-unit';
             
-            const childName = randomName(usedForChildren);
-            usedForChildren.push(childName);
+            let childName = randomName();
+            while (usedNames.includes(childName)) {
+              childName = randomName();
+            }
+            usedNames.push(childName);
             
-            const childCard = createCard(currentDepth + 1, childName, usedForChildren, card, i === 0);
+            const childDesc = randomDescription();
+            
+            const childCard = createCard(currentDepth + 1, childName, childDesc, card, i === 0);
             unit.appendChild(childCard);
             wrapper.appendChild(unit);
           }
@@ -576,6 +594,7 @@
         return card;
       }
 
+      // Initialize
       function init() {
         const container = document.getElementById('treeContainer');
         container.innerHTML = '<canvas class="connector-canvas" id="connectorCanvas"></canvas>';
@@ -583,13 +602,14 @@
         setupCanvas();
         initPanning();
         
-        rootCard = createCard(0, 'You', ['You']);
+        const rootCard = createCard(0, 'You', 'Root User');
         rootCard.classList.add('root-card');
         container.appendChild(rootCard);
         
         updateConnectors();
       }
 
+      // Start the app
       init();
     })();
   </script>
